@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Eye } from "lucide-react";
 import { format } from "date-fns";
+import { PageLoading } from "@/components/shared/page-loading";
 
 interface SalesOrder {
   id: string;
@@ -35,7 +36,7 @@ export default function SalesOrdersPage() {
   const t = useTranslations("sales");
   const tc = useTranslations("common");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const { data: orders = [] } = useSWR<SalesOrder[]>(
+  const { data: orders = [], isLoading } = useSWR<SalesOrder[]>(
     `/api/sales-orders${statusFilter !== "ALL" ? `?status=${statusFilter}` : ""}`
   );
 
@@ -51,6 +52,8 @@ export default function SalesOrdersPage() {
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("th-TH", { style: "currency", currency: "THB" }).format(price);
+
+  if (isLoading) return <PageLoading />;
 
   return (
     <div className="space-y-4">

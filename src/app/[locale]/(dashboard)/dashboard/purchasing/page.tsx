@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Eye } from "lucide-react";
 import { format } from "date-fns";
+import { PageLoading } from "@/components/shared/page-loading";
 
 interface PurchaseOrder {
   id: string;
@@ -36,7 +37,7 @@ export default function PurchaseOrdersPage() {
   const t = useTranslations("purchasing");
   const tc = useTranslations("common");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const { data: orders = [] } = useSWR<PurchaseOrder[]>(
+  const { data: orders = [], isLoading } = useSWR<PurchaseOrder[]>(
     `/api/purchase-orders${statusFilter !== "ALL" ? `?status=${statusFilter}` : ""}`
   );
 
@@ -52,6 +53,8 @@ export default function PurchaseOrdersPage() {
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("th-TH", { style: "currency", currency: "THB" }).format(price);
+
+  if (isLoading) return <PageLoading />;
 
   return (
     <div className="space-y-4">

@@ -11,6 +11,8 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { format } from "date-fns";
+import { StatsSkeleton, CardSkeleton } from "@/components/shared/page-loading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface DashboardData {
   salesThisMonth: number;
@@ -37,7 +39,7 @@ interface DashboardData {
 
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
-  const { data } = useSWR<DashboardData>("/api/dashboard");
+  const { data, isLoading } = useSWR<DashboardData>("/api/dashboard");
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("th-TH", { style: "currency", currency: "THB" }).format(price);
@@ -72,6 +74,19 @@ export default function DashboardPage() {
       bg: "bg-orange-50",
     },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <StatsSkeleton />
+        <div className="grid gap-6 md:grid-cols-2">
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { ArrowLeft, CheckCircle, Printer, Banknote, XCircle } from "lucide-react";
 import { format } from "date-fns";
+import { DetailSkeleton } from "@/components/shared/page-loading";
 
 interface Invoice {
   id: string;
@@ -83,7 +84,7 @@ export default function InvoiceDetailPage() {
   };
 
   if (!invoice) {
-    return <div className="flex items-center justify-center py-8">{tc("loading")}</div>;
+    return <DetailSkeleton />;
   }
 
   return (

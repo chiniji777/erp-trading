@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardSkeleton } from "@/components/shared/page-loading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Company {
   id: string;
@@ -43,7 +45,14 @@ export default function SettingsPage() {
     setSaving(false);
   };
 
-  if (!company) return null;
+  if (!company) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <CardSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

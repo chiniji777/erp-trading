@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Search, Eye } from "lucide-react";
 import { format } from "date-fns";
+import { PageLoading } from "@/components/shared/page-loading";
 
 interface Invoice {
   id: string;
@@ -47,7 +48,7 @@ export default function InvoicesPage() {
     if (statusFilter) params.set("status", statusFilter);
     return `/api/invoices?${params}`;
   })();
-  const { data: invoices = [] } = useSWR<Invoice[]>(swrKey);
+  const { data: invoices = [], isLoading } = useSWR<Invoice[]>(swrKey);
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("th-TH", { style: "currency", currency: "THB" }).format(price);
@@ -61,6 +62,8 @@ export default function InvoicesPage() {
     };
     return map[s] || s;
   };
+
+  if (isLoading) return <PageLoading />;
 
   return (
     <div className="space-y-4">

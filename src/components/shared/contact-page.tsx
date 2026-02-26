@@ -14,6 +14,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { PageLoading } from "@/components/shared/page-loading";
 
 interface Contact {
   id: string;
@@ -74,7 +75,7 @@ export function ContactPage({
   commonLabels,
 }: ContactPageProps) {
   const [search, setSearch] = useState("");
-  const { data: contacts = [], mutate: mutateContacts } = useSWR<Contact[]>(
+  const { data: contacts = [], isLoading, mutate: mutateContacts } = useSWR<Contact[]>(
     `${apiPath}?search=${encodeURIComponent(search)}`
   );
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -122,6 +123,8 @@ export function ContactPage({
     await fetch(`${apiPath}/${id}`, { method: "DELETE" });
     mutateContacts();
   };
+
+  if (isLoading) return <PageLoading />;
 
   return (
     <div className="space-y-4">

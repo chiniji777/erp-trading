@@ -8,6 +8,8 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { format } from "date-fns";
+import { TableSkeleton } from "@/components/shared/page-loading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ProductWithStock {
   id: string;
@@ -40,8 +42,8 @@ const typeColors: Record<string, "default" | "secondary" | "destructive"> = {
 export default function InventoryPage() {
   const t = useTranslations("inventory");
   const tc = useTranslations("common");
-  const { data: products = [] } = useSWR<ProductWithStock[]>("/api/inventory");
-  const { data: movements = [] } = useSWR<StockMovement[]>("/api/inventory/movements");
+  const { data: products = [], isLoading: loadingProducts } = useSWR<ProductWithStock[]>("/api/inventory");
+  const { data: movements = [], isLoading: loadingMovements } = useSWR<StockMovement[]>("/api/inventory/movements");
 
   const typeLabel = (type: string) => {
     const map: Record<string, string> = {
@@ -51,6 +53,15 @@ export default function InventoryPage() {
     };
     return map[type] || type;
   };
+
+  if (loadingProducts && loadingMovements) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <TableSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

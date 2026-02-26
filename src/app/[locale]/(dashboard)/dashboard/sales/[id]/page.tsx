@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { ArrowLeft, CheckCircle, Printer, Truck, XCircle } from "lucide-react";
 import { format } from "date-fns";
+import { DetailSkeleton } from "@/components/shared/page-loading";
 
 interface SalesOrder {
   id: string;
@@ -71,7 +72,7 @@ export default function SalesOrderDetailPage() {
   };
 
   if (!order) {
-    return <div className="flex items-center justify-center py-8">{tc("loading")}</div>;
+    return <DetailSkeleton />;
   }
 
   return (

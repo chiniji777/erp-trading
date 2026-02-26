@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { PageLoading } from "@/components/shared/page-loading";
 
 interface Product {
   id: string;
@@ -73,7 +74,7 @@ export default function ProductsPage() {
   const t = useTranslations("products");
   const tc = useTranslations("common");
   const [search, setSearch] = useState("");
-  const { data: products = [], mutate: mutateProducts } = useSWR<Product[]>(
+  const { data: products = [], isLoading, mutate: mutateProducts } = useSWR<Product[]>(
     `/api/products?search=${encodeURIComponent(search)}`
   );
   const { data: categories = [] } = useSWR<Category[]>("/api/categories");
@@ -132,6 +133,8 @@ export default function ProductsPage() {
       style: "currency",
       currency: "THB",
     }).format(price);
+
+  if (isLoading) return <PageLoading />;
 
   return (
     <div className="space-y-4">
