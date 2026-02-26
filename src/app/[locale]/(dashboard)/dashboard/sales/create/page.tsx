@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
+import useSWR from "swr";
 import { useRouter } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,19 +41,14 @@ export default function CreateSalesOrderPage() {
   const t = useTranslations("sales");
   const tc = useTranslations("common");
   const router = useRouter();
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const { data: customers = [] } = useSWR<Customer[]>("/api/customers");
+  const { data: products = [] } = useSWR<Product[]>("/api/products");
   const [customerId, setCustomerId] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/customers").then((r) => r.json()).then(setCustomers);
-    fetch("/api/products").then((r) => r.json()).then(setProducts);
-  }, []);
 
   const addItem = () => {
     setItems([...items, { productId: "", quantity: 1, unitPrice: 0 }]);

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import useSWR from "swr";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -37,13 +37,7 @@ interface DashboardData {
 
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
-  const [data, setData] = useState<DashboardData | null>(null);
-
-  useEffect(() => {
-    fetch("/api/dashboard")
-      .then((r) => r.json())
-      .then(setData);
-  }, []);
+  const { data } = useSWR<DashboardData>("/api/dashboard");
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("th-TH", { style: "currency", currency: "THB" }).format(price);

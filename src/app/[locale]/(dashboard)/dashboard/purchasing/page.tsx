@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
+import useSWR from "swr";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,18 +35,10 @@ const statusColors: Record<string, "default" | "secondary" | "destructive" | "ou
 export default function PurchaseOrdersPage() {
   const t = useTranslations("purchasing");
   const tc = useTranslations("common");
-  const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [statusFilter, setStatusFilter] = useState("ALL");
-
-  const fetchOrders = useCallback(async () => {
-    const params = statusFilter !== "ALL" ? `?status=${statusFilter}` : "";
-    const res = await fetch(`/api/purchase-orders${params}`);
-    setOrders(await res.json());
-  }, [statusFilter]);
-
-  useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+  const { data: orders = [] } = useSWR<PurchaseOrder[]>(
+    `/api/purchase-orders${statusFilter !== "ALL" ? `?status=${statusFilter}` : ""}`
+  );
 
   const statusLabel = (s: string) => {
     const map: Record<string, string> = {

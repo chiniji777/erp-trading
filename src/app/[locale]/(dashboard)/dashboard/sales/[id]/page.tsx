@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import useSWR from "swr";
 import { useRouter } from "@/i18n/routing";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -46,13 +46,7 @@ export default function SalesOrderDetailPage() {
   const tc = useTranslations("common");
   const router = useRouter();
   const params = useParams();
-  const [order, setOrder] = useState<SalesOrder | null>(null);
-
-  useEffect(() => {
-    fetch(`/api/sales-orders/${params.id}`)
-      .then((r) => r.json())
-      .then(setOrder);
-  }, [params.id]);
+  const { data: order, mutate } = useSWR<SalesOrder>(`/api/sales-orders/${params.id}`);
 
   const updateStatus = async (status: string) => {
     await fetch(`/api/sales-orders/${params.id}`, {
@@ -60,8 +54,7 @@ export default function SalesOrderDetailPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
-    const res = await fetch(`/api/sales-orders/${params.id}`);
-    setOrder(await res.json());
+    mutate();
   };
 
   const formatPrice = (price: number) =>

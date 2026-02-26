@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import useSWR from "swr";
 import { useRouter } from "@/i18n/routing";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -58,13 +58,7 @@ export default function InvoiceDetailPage() {
   const tc = useTranslations("common");
   const router = useRouter();
   const params = useParams();
-  const [invoice, setInvoice] = useState<Invoice | null>(null);
-
-  useEffect(() => {
-    fetch(`/api/invoices/${params.id}`)
-      .then((r) => r.json())
-      .then(setInvoice);
-  }, [params.id]);
+  const { data: invoice, mutate } = useSWR<Invoice>(`/api/invoices/${params.id}`);
 
   const updateStatus = async (status: string) => {
     await fetch(`/api/invoices/${params.id}`, {
@@ -72,8 +66,7 @@ export default function InvoiceDetailPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
-    const res = await fetch(`/api/invoices/${params.id}`);
-    setInvoice(await res.json());
+    mutate();
   };
 
   const formatPrice = (price: number) =>

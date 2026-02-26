@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,14 +24,13 @@ interface Company {
 export default function SettingsPage() {
   const t = useTranslations("settings");
   const tc = useTranslations("common");
+  const { data: serverCompany } = useSWR<Company>("/api/settings/company");
   const [company, setCompany] = useState<Company | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetch("/api/settings/company")
-      .then((r) => r.json())
-      .then(setCompany);
-  }, []);
+    if (serverCompany && !company) setCompany(serverCompany);
+  }, [serverCompany, company]);
 
   const handleSave = async () => {
     if (!company) return;

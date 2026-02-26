@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
+import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -72,21 +73,14 @@ export function ContactPage({
   labels,
   commonLabels,
 }: ContactPageProps) {
-  const [contacts, setContacts] = useState<Contact[]>([]);
   const [search, setSearch] = useState("");
+  const { data: contacts = [], mutate: mutateContacts } = useSWR<Contact[]>(
+    `${apiPath}?search=${encodeURIComponent(search)}`
+  );
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(false);
-
-  const fetchContacts = useCallback(async () => {
-    const res = await fetch(`${apiPath}?search=${encodeURIComponent(search)}`);
-    setContacts(await res.json());
-  }, [search, apiPath]);
-
-  useEffect(() => {
-    fetchContacts();
-  }, [fetchContacts]);
 
   const openCreate = () => {
     setEditingId(null);
@@ -120,13 +114,13 @@ export function ContactPage({
     });
     setLoading(false);
     setDialogOpen(false);
-    fetchContacts();
+    mutateContacts();
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("ต้องการลบข้อมูลนี้ใช่หรือไม่?")) return;
     await fetch(`${apiPath}/${id}`, { method: "DELETE" });
-    fetchContacts();
+    mutateContacts();
   };
 
   return (

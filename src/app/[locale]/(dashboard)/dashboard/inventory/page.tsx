@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -40,13 +40,8 @@ const typeColors: Record<string, "default" | "secondary" | "destructive"> = {
 export default function InventoryPage() {
   const t = useTranslations("inventory");
   const tc = useTranslations("common");
-  const [products, setProducts] = useState<ProductWithStock[]>([]);
-  const [movements, setMovements] = useState<StockMovement[]>([]);
-
-  useEffect(() => {
-    fetch("/api/inventory").then((r) => r.json()).then(setProducts);
-    fetch("/api/inventory/movements").then((r) => r.json()).then(setMovements);
-  }, []);
+  const { data: products = [] } = useSWR<ProductWithStock[]>("/api/inventory");
+  const { data: movements = [] } = useSWR<StockMovement[]>("/api/inventory/movements");
 
   const typeLabel = (type: string) => {
     const map: Record<string, string> = {

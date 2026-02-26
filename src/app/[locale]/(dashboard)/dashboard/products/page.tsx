@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
+import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -71,34 +72,16 @@ const emptyForm = {
 export default function ProductsPage() {
   const t = useTranslations("products");
   const tc = useTranslations("common");
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [units, setUnits] = useState<Unit[]>([]);
   const [search, setSearch] = useState("");
+  const { data: products = [], mutate: mutateProducts } = useSWR<Product[]>(
+    `/api/products?search=${encodeURIComponent(search)}`
+  );
+  const { data: categories = [] } = useSWR<Category[]>("/api/categories");
+  const { data: units = [] } = useSWR<Unit[]>("/api/units");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(false);
-
-  const fetchProducts = useCallback(async () => {
-    const res = await fetch(`/api/products?search=${encodeURIComponent(search)}`);
-    const data = await res.json();
-    setProducts(data);
-  }, [search]);
-
-  const fetchMasterData = async () => {
-    const [catRes, unitRes] = await Promise.all([
-      fetch("/api/categories"),
-      fetch("/api/units"),
-    ]);
-    setCategories(await catRes.json());
-    setUnits(await unitRes.json());
-  };
-
-  useEffect(() => {
-    fetchProducts();
-    fetchMasterData();
-  }, [fetchProducts]);
 
   const openCreate = () => {
     setEditingId(null);
@@ -135,13 +118,13 @@ export default function ProductsPage() {
 
     setLoading(false);
     setDialogOpen(false);
-    fetchProducts();
+    mutateProducts();
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm(t("deleteConfirm"))) return;
     await fetch(`/api/products/${id}`, { method: "DELETE" });
-    fetchProducts();
+    mutateProducts();
   };
 
   const formatPrice = (price: number) =>

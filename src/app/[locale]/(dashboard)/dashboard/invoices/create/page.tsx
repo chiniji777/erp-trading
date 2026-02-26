@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
+import useSWR from "swr";
 import { useRouter } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,31 +44,15 @@ export default function CreateInvoicePage() {
   const t = useTranslations("invoices");
   const tc = useTranslations("common");
   const router = useRouter();
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const { data: customers = [] } = useSWR<Customer[]>("/api/customers");
   const [customerId, setCustomerId] = useState("");
-  const [salesOrders, setSalesOrders] = useState<SalesOrder[]>([]);
+  const { data: salesOrders = [] } = useSWR<SalesOrder[]>(
+    customerId ? `/api/sales-orders?customerId=${customerId}&forInvoice=true` : null
+  );
   const [selectedSOIds, setSelectedSOIds] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/customers").then((r) => r.json()).then(setCustomers);
-  }, []);
-
-  useEffect(() => {
-    if (!customerId) {
-      setSalesOrders([]);
-      setSelectedSOIds([]);
-      return;
-    }
-    fetch(`/api/sales-orders?customerId=${customerId}&forInvoice=true`)
-      .then((r) => r.json())
-      .then((data) => {
-        setSalesOrders(data);
-        setSelectedSOIds([]);
-      });
-  }, [customerId]);
 
   const toggleSO = (soId: string) => {
     setSelectedSOIds((prev) =>
@@ -117,7 +102,7 @@ export default function CreateInvoicePage() {
             <CardTitle className="text-lg">{t("selectCustomer")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Select value={customerId} onValueChange={setCustomerId}>
+            <Select value={customerId} onValueChange={(v) => { setCustomerId(v); setSelectedSOIds([]); }}>
               <SelectTrigger>
                 <SelectValue placeholder={t("selectCustomer")} />
               </SelectTrigger>

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
+import useSWR from "swr";
 import { useRouter } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,21 +39,15 @@ export default function InvoicesPage() {
   const t = useTranslations("invoices");
   const tc = useTranslations("common");
   const router = useRouter();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-
-  const fetchInvoices = useCallback(async () => {
+  const swrKey = (() => {
     const params = new URLSearchParams();
     if (search) params.set("search", search);
     if (statusFilter) params.set("status", statusFilter);
-    const res = await fetch(`/api/invoices?${params}`);
-    setInvoices(await res.json());
-  }, [search, statusFilter]);
-
-  useEffect(() => {
-    fetchInvoices();
-  }, [fetchInvoices]);
+    return `/api/invoices?${params}`;
+  })();
+  const { data: invoices = [] } = useSWR<Invoice[]>(swrKey);
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("th-TH", { style: "currency", currency: "THB" }).format(price);
