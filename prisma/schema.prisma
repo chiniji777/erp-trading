@@ -1,0 +1,312 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==================== AUTH ====================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String
+  role          Role      @default(STAFF)
+  image         String?
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions      Session[]
+  purchaseOrders PurchaseOrder[]
+  salesOrders    SalesOrder[]
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+// ==================== COMPANY ====================
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  nameTh    String?
+  address   String?
+  addressTh String?
+  taxId     String?
+  phone     String?
+  email     String?
+  logo      String?
+  vatRate   Float    @default(7)
+  currency  String   @default("THB")
+  poPrefix  String   @default("PO")
+  soPrefix  String   @default("SO")
+  invPrefix String   @default("INV")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==================== MASTER DATA ====================
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  nameTh    String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Unit {
+  id        String    @id @default(cuid())
+  name      String
+  nameTh    String?
+  abbr      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  sku          String   @unique
+  name         String
+  nameTh       String?
+  description  String?
+  categoryId   String?
+  unitId       String?
+  buyPrice     Float    @default(0)
+  sellPrice    Float    @default(0)
+  minStock     Int      @default(0)
+  image        String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  category     Category? @relation(fields: [categoryId], references: [id])
+  unit         Unit?     @relation(fields: [unitId], references: [id])
+
+  purchaseOrderItems PurchaseOrderItem[]
+  salesOrderItems    SalesOrderItem[]
+  inventory          Inventory[]
+  stockMovements     StockMovement[]
+}
+
+model Warehouse {
+  id        String      @id @default(cuid())
+  name      String
+  nameTh    String?
+  address   String?
+  active    Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  inventory      Inventory[]
+  stockMovements StockMovement[]
+}
+
+// ==================== CONTACTS ====================
+
+model Supplier {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  nameTh    String?
+  contact   String?
+  phone     String?
+  email     String?
+  address   String?
+  taxId     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchaseOrders PurchaseOrder[]
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  nameTh    String?
+  contact   String?
+  phone     String?
+  email     String?
+  address   String?
+  taxId     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  salesOrders SalesOrder[]
+}
+
+// ==================== PURCHASING ====================
+
+enum PurchaseOrderStatus {
+  DRAFT
+  CONFIRMED
+  RECEIVED
+  CANCELLED
+}
+
+model PurchaseOrder {
+  id          String              @id @default(cuid())
+  poNumber    String              @unique
+  supplierId  String
+  date        DateTime            @default(now())
+  dueDate     DateTime?
+  status      PurchaseOrderStatus @default(DRAFT)
+  subtotal    Float               @default(0)
+  vatAmount   Float               @default(0)
+  total       Float               @default(0)
+  notes       String?
+  createdById String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  supplier    Supplier            @relation(fields: [supplierId], references: [id])
+  createdBy   User?               @relation(fields: [createdById], references: [id])
+  items       PurchaseOrderItem[]
+}
+
+model PurchaseOrderItem {
+  id              String        @id @default(cuid())
+  purchaseOrderId String
+  productId       String
+  quantity        Float
+  unitPrice       Float
+  total           Float
+  receivedQty     Float         @default(0)
+
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  product         Product       @relation(fields: [productId], references: [id])
+}
+
+// ==================== SALES ====================
+
+enum SalesOrderStatus {
+  DRAFT
+  CONFIRMED
+  DELIVERED
+  CANCELLED
+}
+
+model SalesOrder {
+  id          String           @id @default(cuid())
+  soNumber    String           @unique
+  customerId  String
+  date        DateTime         @default(now())
+  dueDate     DateTime?
+  status      SalesOrderStatus @default(DRAFT)
+  subtotal    Float            @default(0)
+  vatAmount   Float            @default(0)
+  total       Float            @default(0)
+  notes       String?
+  createdById String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  customer    Customer         @relation(fields: [customerId], references: [id])
+  createdBy   User?            @relation(fields: [createdById], references: [id])
+  items       SalesOrderItem[]
+  invoices    Invoice[]
+}
+
+model SalesOrderItem {
+  id           String     @id @default(cuid())
+  salesOrderId String
+  productId    String
+  quantity     Float
+  unitPrice    Float
+  total        Float
+  deliveredQty Float      @default(0)
+
+  salesOrder   SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  product      Product    @relation(fields: [productId], references: [id])
+}
+
+// ==================== INVOICE ====================
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  CANCELLED
+}
+
+model Invoice {
+  id           String        @id @default(cuid())
+  invoiceNumber String       @unique
+  salesOrderId String
+  date         DateTime      @default(now())
+  dueDate      DateTime?
+  status       InvoiceStatus @default(DRAFT)
+  subtotal     Float         @default(0)
+  vatAmount    Float         @default(0)
+  total        Float         @default(0)
+  notes        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  salesOrder   SalesOrder    @relation(fields: [salesOrderId], references: [id])
+}
+
+// ==================== INVENTORY ====================
+
+model Inventory {
+  id          String    @id @default(cuid())
+  productId   String
+  warehouseId String
+  quantity    Float     @default(0)
+  updatedAt   DateTime  @updatedAt
+
+  product     Product   @relation(fields: [productId], references: [id])
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+
+  @@unique([productId, warehouseId])
+}
+
+enum MovementType {
+  IN
+  OUT
+  ADJUST
+}
+
+model StockMovement {
+  id          String       @id @default(cuid())
+  productId   String
+  warehouseId String
+  type        MovementType
+  quantity    Float
+  reference   String?
+  notes       String?
+  createdAt   DateTime     @default(now())
+
+  product     Product      @relation(fields: [productId], references: [id])
+  warehouse   Warehouse    @relation(fields: [warehouseId], references: [id])
+}
+
+// ==================== DOCUMENT NUMBERING ====================
+
+model DocumentSequence {
+  id        String   @id @default(cuid())
+  prefix    String   @unique
+  lastNumber Int     @default(0)
+  year       Int
+  updatedAt  DateTime @updatedAt
+}
