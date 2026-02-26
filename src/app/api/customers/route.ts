@@ -1,19 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { cached, invalidateCache } from "@/lib/redis";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const search = searchParams.get("search") || "";
 
-  const customers = await prisma.customer.findMany({
-    where: {
-      OR: [
-        { name: { contains: search, mode: "insensitive" } },
-        { code: { contains: search, mode: "insensitive" } },
-      ],
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  const cacheKey = `customers:${search}`;
+  const customers = await cached(cacheKey, () =>
+    prisma.customer.findMany({
+      where: {
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { code: { contains: search, mode: "insensitive" } },
+        ],
+      },
+      orderBy: { createdAt: "desc" },
+    }), 30);
 
   return NextResponse.json(customers);
 }
@@ -32,5 +35,6 @@ export async function POST(request: NextRequest) {
       taxId: body.taxId,
     },
   });
+  await invalidateCache("customers");
   return NextResponse.json(customer, { status: 201 });
 }

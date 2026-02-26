@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { cached, invalidateKey } from "@/lib/redis";
 
 export async function GET() {
-  let company = await prisma.company.findFirst();
+  let company = await cached("company", () => prisma.company.findFirst(), 120);
 
   if (!company) {
     company = await prisma.company.create({
@@ -39,5 +40,6 @@ export async function PUT(request: NextRequest) {
     },
   });
 
+  await invalidateKey("company");
   return NextResponse.json(updated);
 }

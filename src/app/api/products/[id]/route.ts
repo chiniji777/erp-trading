@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { invalidateCache } from "@/lib/redis";
 
 export async function GET(
   request: NextRequest,
@@ -42,6 +43,7 @@ export async function PUT(
     include: { category: true, unit: true },
   });
 
+  await invalidateCache("products");
   return NextResponse.json(product);
 }
 
@@ -53,5 +55,6 @@ export async function DELETE(
 
   await prisma.product.delete({ where: { id } });
 
+  await invalidateCache("products");
   return NextResponse.json({ success: true });
 }

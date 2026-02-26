@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateDocumentNumber } from "@/lib/document-number";
+import { invalidateCache, invalidateKey } from "@/lib/redis";
 
 export async function GET(
   request: NextRequest,
@@ -115,6 +116,8 @@ export async function PUT(
         });
       });
 
+      await Promise.all([invalidateKey("dashboard"), invalidateCache("inventory")]);
+
       const updated = await prisma.salesOrder.findUnique({
         where: { id },
         include: { customer: true, items: { include: { product: true } }, invoices: true },
@@ -127,6 +130,7 @@ export async function PUT(
       data: { status: body.status },
       include: { customer: true, items: { include: { product: true } } },
     });
+    await invalidateKey("dashboard");
     return NextResponse.json(updated);
   }
 

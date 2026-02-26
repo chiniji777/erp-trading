@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { invalidateCache } from "@/lib/redis";
 
 export async function PUT(
   request: NextRequest,
@@ -20,6 +21,7 @@ export async function PUT(
       taxId: body.taxId,
     },
   });
+  await invalidateCache("customers");
   return NextResponse.json(customer);
 }
 
@@ -29,5 +31,6 @@ export async function DELETE(
 ) {
   const { id } = await params;
   await prisma.customer.delete({ where: { id } });
+  await invalidateCache("customers");
   return NextResponse.json({ success: true });
 }

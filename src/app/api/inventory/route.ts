@@ -1,29 +1,20 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { cached } from "@/lib/redis";
 
 export async function GET() {
-  const inventory = await prisma.inventory.findMany({
-    include: {
-      product: {
-        include: { category: true, unit: true },
+  const productsWithStock = await cached("inventory", () =>
+    prisma.product.findMany({
+      include: {
+        category: true,
+        unit: true,
+        inventory: {
+          include: { warehouse: true },
+        },
       },
-      warehouse: true,
-    },
-    orderBy: { product: { name: "asc" } },
-  });
-
-  // Also get products with no inventory record
-  const productsWithStock = await prisma.product.findMany({
-    include: {
-      category: true,
-      unit: true,
-      inventory: {
-        include: { warehouse: true },
-      },
-    },
-    where: { active: true },
-    orderBy: { name: "asc" },
-  });
+      where: { active: true },
+      orderBy: { name: "asc" },
+    }), 15);
 
   return NextResponse.json(productsWithStock);
 }
