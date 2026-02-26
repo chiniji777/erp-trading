@@ -158,6 +158,7 @@ export function ContactPage({
               <TableHead>{labels.contact}</TableHead>
               <TableHead>{labels.phone}</TableHead>
               <TableHead>{labels.email}</TableHead>
+              <TableHead>{labels.taxId}</TableHead>
               <TableHead className="text-center">{commonLabels.status}</TableHead>
               <TableHead className="text-right">{commonLabels.actions}</TableHead>
             </TableRow>
@@ -165,7 +166,7 @@ export function ContactPage({
           <TableBody>
             {contacts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                   {commonLabels.noData}
                 </TableCell>
               </TableRow>
@@ -180,6 +181,7 @@ export function ContactPage({
                   <TableCell>{c.contact || "-"}</TableCell>
                   <TableCell>{c.phone || "-"}</TableCell>
                   <TableCell>{c.email || "-"}</TableCell>
+                  <TableCell className="text-sm">{c.taxId || "-"}</TableCell>
                   <TableCell className="text-center">
                     <Badge variant={c.active ? "default" : "secondary"}>
                       {c.active ? commonLabels.active : commonLabels.inactive}

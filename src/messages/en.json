@@ -166,6 +166,32 @@
     "toDate": "To Date",
     "generate": "Generate Report"
   },
+  "invoices": {
+    "title": "Invoices",
+    "createInvoice": "Create Invoice",
+    "invoiceNumber": "Invoice Number",
+    "customer": "Customer",
+    "dueDate": "Due Date",
+    "subtotal": "Subtotal",
+    "vat": "VAT",
+    "grandTotal": "Grand Total",
+    "product": "Product",
+    "quantity": "Quantity",
+    "unitPrice": "Unit Price",
+    "lineTotal": "Total",
+    "statusDraft": "Draft",
+    "statusIssued": "Issued",
+    "statusPaid": "Paid",
+    "statusCancelled": "Cancelled",
+    "issue": "Issue Invoice",
+    "markPaid": "Mark as Paid",
+    "selectCustomer": "Select Customer",
+    "selectSalesOrders": "Select Sales Orders",
+    "noSalesOrders": "No sales orders available for invoicing",
+    "selectedSOs": "Selected Sales Orders",
+    "relatedSOs": "Related Sales Orders",
+    "autoCreated": "Auto-created from delivery"
+  },
   "settings": {
     "title": "Settings",
     "company": "Company Info",
@@ -174,6 +200,7 @@
     "address": "Address",
     "taxId": "Tax ID",
     "phone": "Phone",
+    "email": "Email",
     "vatRate": "VAT Rate (%)"
   }
 }

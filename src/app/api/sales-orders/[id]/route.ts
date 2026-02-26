@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { generateDocumentNumber } from "@/lib/document-number";
 
 export async function GET(
   request: NextRequest,
@@ -84,11 +85,39 @@ export async function PUT(
             data: { deliveredQty: item.quantity },
           });
         }
+
+        // Auto-create Invoice
+        const company = await tx.company.findFirst();
+        const vatRate = company?.vatRate || 7;
+        const subtotal = order.items.reduce((sum, item) => sum + item.total, 0);
+        const vatAmount = subtotal * (vatRate / 100);
+        const total = subtotal + vatAmount;
+        const invoiceNumber = await generateDocumentNumber("INV");
+
+        await tx.invoice.create({
+          data: {
+            invoiceNumber,
+            customerId: order.customerId,
+            subtotal,
+            vatAmount,
+            total,
+            notes: `สร้างอัตโนมัติจาก ${order.soNumber}`,
+            salesOrders: { connect: [{ id: order.id }] },
+            items: {
+              create: order.items.map((item) => ({
+                productId: item.productId,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                total: item.total,
+              })),
+            },
+          },
+        });
       });
 
       const updated = await prisma.salesOrder.findUnique({
         where: { id },
-        include: { customer: true, items: { include: { product: true } } },
+        include: { customer: true, items: { include: { product: true } }, invoices: true },
       });
       return NextResponse.json(updated);
     }

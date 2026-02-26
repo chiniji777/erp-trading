@@ -166,6 +166,32 @@
     "toDate": "ถึงวันที่",
     "generate": "สร้างรายงาน"
   },
+  "invoices": {
+    "title": "ใบแจ้งหนี้",
+    "createInvoice": "สร้างใบแจ้งหนี้",
+    "invoiceNumber": "เลขที่ใบแจ้งหนี้",
+    "customer": "ลูกค้า",
+    "dueDate": "กำหนดชำระ",
+    "subtotal": "ยอดรวมก่อน VAT",
+    "vat": "ภาษีมูลค่าเพิ่ม",
+    "grandTotal": "ยอดรวมสุทธิ",
+    "product": "สินค้า",
+    "quantity": "จำนวน",
+    "unitPrice": "ราคาต่อหน่วย",
+    "lineTotal": "รวม",
+    "statusDraft": "แบบร่าง",
+    "statusIssued": "ออกแล้ว",
+    "statusPaid": "ชำระแล้ว",
+    "statusCancelled": "ยกเลิก",
+    "issue": "ออกใบแจ้งหนี้",
+    "markPaid": "ชำระเงิน",
+    "selectCustomer": "เลือกลูกค้า",
+    "selectSalesOrders": "เลือกใบสั่งขาย",
+    "noSalesOrders": "ไม่มีใบสั่งขายที่สามารถออกบิลได้",
+    "selectedSOs": "ใบสั่งขายที่เลือก",
+    "relatedSOs": "ใบสั่งขายที่เกี่ยวข้อง",
+    "autoCreated": "สร้างอัตโนมัติจากการส่งสินค้า"
+  },
   "settings": {
     "title": "ตั้งค่า",
     "company": "ข้อมูลบริษัท",
@@ -174,6 +200,7 @@
     "address": "ที่อยู่",
     "taxId": "เลขประจำตัวผู้เสียภาษี",
     "phone": "โทรศัพท์",
+    "email": "อีเมล",
     "vatRate": "อัตรา VAT (%)"
   }
 }

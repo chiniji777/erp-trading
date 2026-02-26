@@ -576,14 +576,29 @@ async function main() {
   await prisma.invoice.create({
     data: {
       invoiceNumber: "INV26-00001",
-      salesOrderId: so1.id,
+      customerId: so1.customerId,
       date: new Date("2026-02-05"),
       dueDate: new Date("2026-03-05"),
       status: "ISSUED",
       subtotal: 22350,
       vatAmount: 1564.5,
       total: 23914.5,
+      salesOrders: { connect: [{ id: so1.id }] },
+      items: {
+        create: [
+          { productId: products[0].id, quantity: 100, unitPrice: 125, total: 12500 },
+          { productId: products[2].id, quantity: 50, unitPrice: 85, total: 4250 },
+          { productId: products[4].id, quantity: 200, unitPrice: 28, total: 5600 },
+        ],
+      },
     },
+  });
+
+  // Update document sequence for INV
+  await prisma.documentSequence.upsert({
+    where: { prefix: "INV" },
+    create: { prefix: "INV", lastNumber: 1, year: 2026 },
+    update: { lastNumber: 1 },
   });
 
   console.log("Created 1 invoice");

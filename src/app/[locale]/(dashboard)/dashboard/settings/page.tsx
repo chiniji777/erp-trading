@@ -17,6 +17,7 @@ interface Company {
   phone: string | null;
   email: string | null;
   vatRate: number;
+  logo: string | null;
 }
 
 export default function SettingsPage() {
@@ -87,14 +88,41 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>{t("vatRate")}</Label>
-            <Input
-              type="number"
-              className="w-32"
-              value={company.vatRate}
-              onChange={(e) => setCompany({ ...company, vatRate: parseFloat(e.target.value) || 7 })}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>{t("address")} (EN)</Label>
+              <Input
+                value={company.address || ""}
+                onChange={(e) => setCompany({ ...company, address: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{t("address")} (TH)</Label>
+              <Input
+                value={company.addressTh || ""}
+                onChange={(e) => setCompany({ ...company, addressTh: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={company.email || ""}
+                onChange={(e) => setCompany({ ...company, email: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{t("vatRate")}</Label>
+              <Input
+                type="number"
+                className="w-32"
+                value={company.vatRate}
+                onChange={(e) => setCompany({ ...company, vatRate: parseFloat(e.target.value) || 7 })}
+              />
+            </div>
           </div>
 
           <Button onClick={handleSave} disabled={saving}>

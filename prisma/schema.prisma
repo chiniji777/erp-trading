@@ -102,6 +102,7 @@ model Product {
 
   purchaseOrderItems PurchaseOrderItem[]
   salesOrderItems    SalesOrderItem[]
+  invoiceItems       InvoiceItem[]
   inventory          Inventory[]
   stockMovements     StockMovement[]
 }
@@ -153,6 +154,7 @@ model Customer {
   updatedAt DateTime @updatedAt
 
   salesOrders SalesOrder[]
+  invoices    Invoice[]
 }
 
 // ==================== PURCHASING ====================
@@ -224,7 +226,7 @@ model SalesOrder {
   customer    Customer         @relation(fields: [customerId], references: [id])
   createdBy   User?            @relation(fields: [createdById], references: [id])
   items       SalesOrderItem[]
-  invoices    Invoice[]
+  invoices    Invoice[]    @relation("InvoiceSalesOrders")
 }
 
 model SalesOrderItem {
@@ -250,20 +252,34 @@ enum InvoiceStatus {
 }
 
 model Invoice {
-  id           String        @id @default(cuid())
-  invoiceNumber String       @unique
-  salesOrderId String
-  date         DateTime      @default(now())
-  dueDate      DateTime?
-  status       InvoiceStatus @default(DRAFT)
-  subtotal     Float         @default(0)
-  vatAmount    Float         @default(0)
-  total        Float         @default(0)
-  notes        String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id            String        @id @default(cuid())
+  invoiceNumber String        @unique
+  customerId    String
+  date          DateTime      @default(now())
+  dueDate       DateTime?
+  status        InvoiceStatus @default(DRAFT)
+  subtotal      Float         @default(0)
+  vatAmount     Float         @default(0)
+  total         Float         @default(0)
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  salesOrder   SalesOrder    @relation(fields: [salesOrderId], references: [id])
+  customer      Customer      @relation(fields: [customerId], references: [id])
+  salesOrders   SalesOrder[]  @relation("InvoiceSalesOrders")
+  items         InvoiceItem[]
+}
+
+model InvoiceItem {
+  id        String  @id @default(cuid())
+  invoiceId String
+  productId String
+  quantity  Float
+  unitPrice Float
+  total     Float
+
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
 }
 
 // ==================== INVENTORY ====================

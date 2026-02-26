@@ -5,12 +5,24 @@ import { generateDocumentNumber } from "@/lib/document-number";
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status") || undefined;
+  const customerId = searchParams.get("customerId") || undefined;
+  const forInvoice = searchParams.get("forInvoice") === "true";
+
+  const where: Record<string, unknown> = {};
+  if (status) where.status = status;
+  if (customerId) where.customerId = customerId;
+
+  // For invoice creation: show CONFIRMED/DELIVERED SOs that don't have invoices yet
+  if (forInvoice) {
+    where.status = { in: ["CONFIRMED", "DELIVERED"] };
+    where.invoices = { none: {} };
+  }
 
   const orders = await prisma.salesOrder.findMany({
-    where: status ? { status: status as "DRAFT" | "CONFIRMED" | "DELIVERED" | "CANCELLED" } : {},
+    where,
     include: {
       customer: true,
-      items: { include: { product: true } },
+      items: { include: { product: { include: { unit: true } } } },
       createdBy: { select: { name: true } },
     },
     orderBy: { createdAt: "desc" },
